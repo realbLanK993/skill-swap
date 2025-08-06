@@ -1,19 +1,86 @@
 // /app/dashboard/profile/page.tsx
+"use client"; // <-- IMPORTANT: Convert this page to a Client Component
+
+import { useState, useEffect, FormEvent } from "react";
 import { notFound } from "next/navigation";
 import { fetchUserById, getSkillName, LOGGED_IN_USER_ID } from "@/lib/action";
+import { User } from "@/lib/definitions";
 import SkillBadge from "@/components/ui/SkillBadge";
 import Image from "next/image";
 import { Button } from "@/components/ui/button";
 import Link from "next/link";
 import { Card } from "@/components/ui/card";
-import { Edit, Settings } from "lucide-react";
+import { Input } from "@/components/ui/input";
+import { Edit, PlusCircle } from "lucide-react";
 
-export default async function MyProfilePage() {
-  const user = await fetchUserById(LOGGED_IN_USER_ID);
+export default function MyProfilePage() {
+  // State to hold user data, new skills, and loading status
+  const [user, setUser] = useState<User | null>(null);
+  const [isLoading, setIsLoading] = useState(true);
+  const [newOfferedSkill, setNewOfferedSkill] = useState("");
+  const [newSoughtSkill, setNewSoughtSkill] = useState("");
+
+  // Fetch initial user data when the component mounts
+  useEffect(() => {
+    async function loadUserProfile() {
+      const fetchedUser = await fetchUserById(LOGGED_IN_USER_ID);
+      if (fetchedUser) {
+        setUser(fetchedUser);
+      }
+      setIsLoading(false);
+    }
+    loadUserProfile();
+  }, []); // Empty dependency array ensures this runs only once
+
+  // Handler to temporarily add a skill to the "Offered" list
+  const handleAddOfferedSkill = (e: FormEvent) => {
+    e.preventDefault();
+    if (newOfferedSkill.trim() && user) {
+      // Create a fake new skill ID for the prototype
+      const newSkillId = `temp-offered-${Date.now()}`;
+
+      // IMPORTANT: Update the user state immutably
+      setUser({
+        ...user,
+        skillsOffered: [...user.skillsOffered, newSkillId],
+      });
+
+      // This is a temporary hack for the prototype to make the new skill name appear.
+      // In a real app, the new skill would be saved to the DB and refetched.
+      (window as any)[newSkillId] = newOfferedSkill.trim();
+
+      setNewOfferedSkill(""); // Clear the input
+    }
+  };
+
+  // Handler to temporarily add a skill to the "Sought" list
+  const handleAddSoughtSkill = (e: FormEvent) => {
+    e.preventDefault();
+    if (newSoughtSkill.trim() && user) {
+      const newSkillId = `temp-sought-${Date.now()}`;
+      setUser({
+        ...user,
+        skillsSought: [...user.skillsSought, newSkillId],
+      });
+      (window as any)[newSkillId] = newSoughtSkill.trim();
+      setNewSoughtSkill("");
+    }
+  };
+
+  // Helper to get skill name, including our temporary ones
+  const getDynamicSkillName = (skillId: string) => {
+    if (skillId.startsWith("temp-")) {
+      return (window as any)[skillId] || "New Skill";
+    }
+    return getSkillName(skillId);
+  };
+
+  if (isLoading) {
+    return <div className="text-center p-10">Loading profile...</div>;
+  }
 
   if (!user) {
-    // This should ideally redirect to login if no user is found
-    notFound();
+    return notFound();
   }
 
   return (
@@ -59,35 +126,54 @@ export default async function MyProfilePage() {
 
         {/* Skills */}
         <div className="mt-8 grid grid-cols-1 md:grid-cols-2 gap-8">
-          <div>
-            <div className="flex justify-between items-center border-b pb-2">
-              <h3 className="text-lg font-semibold text-gray-800">
-                Skills You Offer
-              </h3>
-              <Button variant="ghost" size="sm" className="text-gray-500">
-                <Settings size={14} className="mr-2" /> Manage
-              </Button>
-            </div>
-            <div className="mt-4 flex flex-wrap gap-2">
+          {/* Skills I Offer */}
+          <div className="space-y-4">
+            <h3 className="text-lg font-semibold text-gray-800 border-b pb-2">
+              Skills You Offer
+            </h3>
+            <div className="mt-4 flex flex-wrap gap-2 min-h-[40px]">
               {user.skillsOffered.map((skillId) => (
-                <SkillBadge key={skillId}>{getSkillName(skillId)}</SkillBadge>
+                <SkillBadge key={skillId}>
+                  {getDynamicSkillName(skillId)}
+                </SkillBadge>
               ))}
             </div>
-          </div>
-          <div>
-            <div className="flex justify-between items-center border-b pb-2">
-              <h3 className="text-lg font-semibold text-gray-800">
-                Skills You Seek
-              </h3>
-              <Button variant="ghost" size="sm" className="text-gray-500">
-                <Settings size={14} className="mr-2" /> Manage
+            <form onSubmit={handleAddOfferedSkill} className="flex gap-2">
+              <Input
+                type="text"
+                placeholder="Add a new skill..."
+                value={newOfferedSkill}
+                onChange={(e) => setNewOfferedSkill(e.target.value)}
+              />
+              <Button type="submit" size="icon" variant="secondary">
+                <PlusCircle className="h-5 w-5" />
               </Button>
-            </div>
-            <div className="mt-4 flex flex-wrap gap-2">
+            </form>
+          </div>
+
+          {/* Skills I Seek */}
+          <div className="space-y-4">
+            <h3 className="text-lg font-semibold text-gray-800 border-b pb-2">
+              Skills You Seek
+            </h3>
+            <div className="mt-4 flex flex-wrap gap-2 min-h-[40px]">
               {user.skillsSought.map((skillId) => (
-                <SkillBadge key={skillId}>{getSkillName(skillId)}</SkillBadge>
+                <SkillBadge key={skillId}>
+                  {getDynamicSkillName(skillId)}
+                </SkillBadge>
               ))}
             </div>
+            <form onSubmit={handleAddSoughtSkill} className="flex gap-2">
+              <Input
+                type="text"
+                placeholder="Add a skill you want..."
+                value={newSoughtSkill}
+                onChange={(e) => setNewSoughtSkill(e.target.value)}
+              />
+              <Button type="submit" size="icon" variant="secondary">
+                <PlusCircle className="h-5 w-5" />
+              </Button>
+            </form>
           </div>
         </div>
       </Card>
