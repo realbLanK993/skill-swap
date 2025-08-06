@@ -17,7 +17,7 @@ export default async function MyProfilePage() {
   }
 
   return (
-    <div>
+    <div className="flex flex-col gap-8">
       <div className="mb-8">
         <h1 className="text-3xl font-bold tracking-tight">Your Profile</h1>
         <p className="text-gray-600">
