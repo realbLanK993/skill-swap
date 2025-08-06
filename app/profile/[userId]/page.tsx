@@ -56,7 +56,7 @@ export default async function ProfilePage({
                 asChild
               >
                 <Link
-                  href={`/messages/${user.id}`}
+                  href={`/messages/swap${user.id}`}
                   className="flex items-center gap-2"
                 >
                   <MessageCircle size={16} /> Message
