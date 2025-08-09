@@ -52,7 +52,7 @@ export const users: User[] = [
     verified: false,
     age: 34,
     gender: "Male",
-    location: "New York, NY",
+    location: "San Francisco, CA",
   },
   {
     id: "3",
@@ -73,7 +73,7 @@ export const users: User[] = [
     verified: true,
     age: 27,
     gender: "Female",
-    location: "Austin, TX",
+    location: "San Francisco, CA",
   },
   {
     id: "4",
@@ -91,7 +91,7 @@ export const users: User[] = [
     verified: true,
     age: 41,
     gender: "Male",
-    location: "Chicago, IL",
+    location: "San Francisco, CA",
   },
 ];
 
