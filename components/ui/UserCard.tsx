@@ -5,14 +5,14 @@ import { User } from "@/lib/definitions";
 import { Star, MapPin, ShieldCheck, ArrowRight } from "lucide-react";
 import { Button } from "./button";
 import { getSkillName } from "@/lib/action";
-import { Badge } from "./badge";
+import SkillBadge from "./SkillBadge"; // <-- IMPORTANT: Using our custom SkillBadge now
 
 export const UserCard = ({ user }: { user: User }) => {
   return (
-    <div className="bg-card rounded-xl border shadow-sm overflow-hidden flex flex-col">
+    <div className="bg-card rounded-xl border shadow-sm overflow-hidden flex flex-col h-full">
       {/* Banner Image */}
-      <div className="h-24   relative">
-        {/* Placeholder for a real banner image */}
+      <div className="h-24  relative">
+        {/* A placeholder for a real banner image */}
       </div>
 
       {/* Profile Picture and Name */}
@@ -35,7 +35,7 @@ export const UserCard = ({ user }: { user: User }) => {
         </div>
       </div>
 
-      {/* Skills Section */}
+      {/* Skills Section (Now correctly reads the new data structure) */}
       <div className="px-6 mt-4 flex-grow">
         <div className="space-y-3">
           <div>
@@ -43,15 +43,16 @@ export const UserCard = ({ user }: { user: User }) => {
               OFFERS
             </h4>
             <div className="flex flex-wrap gap-1.5 mt-1">
-              {user.skillsOffered.slice(0, 3).map((id) => (
-                <Badge key={id} variant="secondary">
-                  {getSkillName(id)}
-                </Badge>
+              {/* --- UPDATED LOGIC --- */}
+              {user.skillsOffered.slice(0, 3).map((skill) => (
+                <SkillBadge key={skill.skillId} level={skill.level}>
+                  {getSkillName(skill.skillId)}
+                </SkillBadge>
               ))}
               {user.skillsOffered.length > 3 && (
-                <Badge variant="outline">
-                  +{user.skillsOffered.length - 3} more
-                </Badge>
+                <span className="text-xs text-zinc-400 self-center">
+                  + {user.skillsOffered.length - 3} more
+                </span>
               )}
             </div>
           </div>
@@ -60,15 +61,16 @@ export const UserCard = ({ user }: { user: User }) => {
               SEEKS
             </h4>
             <div className="flex flex-wrap gap-1.5 mt-1">
-              {user.skillsSought.slice(0, 2).map((id) => (
-                <Badge key={id} variant="outline">
-                  {getSkillName(id)}
-                </Badge>
+              {/* --- UPDATED LOGIC --- */}
+              {user.skillsSought.slice(0, 2).map((skill) => (
+                <SkillBadge key={skill.skillId} level={skill.level}>
+                  {getSkillName(skill.skillId)}
+                </SkillBadge>
               ))}
               {user.skillsSought.length > 2 && (
-                <Badge variant="outline">
-                  +{user.skillsSought.length - 2} more
-                </Badge>
+                <span className="text-xs text-zinc-400 self-center">
+                  + {user.skillsSought.length - 2} more
+                </span>
               )}
             </div>
           </div>

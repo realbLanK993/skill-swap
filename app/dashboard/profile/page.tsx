@@ -4,13 +4,20 @@
 import { useState, useEffect, FormEvent } from "react";
 import { notFound } from "next/navigation";
 import { fetchUserById, getSkillName, LOGGED_IN_USER_ID } from "@/lib/action";
-import { User } from "@/lib/definitions";
+import { User, SkillLevel, UserSkill } from "@/lib/definitions";
 import SkillBadge from "@/components/ui/SkillBadge";
 import Image from "next/image";
 import { Button } from "@/components/ui/button";
 import Link from "next/link";
 import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 import {
   Edit,
   PlusCircle,
@@ -23,11 +30,17 @@ import {
 export default function MyProfilePage() {
   const [user, setUser] = useState<User | null>(null);
   const [isLoading, setIsLoading] = useState(true);
-  const [newOfferedSkill, setNewOfferedSkill] = useState("");
-  const [newSoughtSkill, setNewSoughtSkill] = useState("");
   const [tempSkillNames, setTempSkillNames] = useState<Record<string, string>>(
     {}
   );
+
+  // --- NEW: State for skill level selection ---
+  const [newOfferedSkill, setNewOfferedSkill] = useState("");
+  const [newOfferedSkillLevel, setNewOfferedSkillLevel] =
+    useState<SkillLevel>("Beginner");
+  const [newSoughtSkill, setNewSoughtSkill] = useState("");
+  const [newSoughtSkillLevel, setNewSoughtSkillLevel] =
+    useState<SkillLevel>("Beginner");
 
   useEffect(() => {
     async function loadUserProfile() {
@@ -38,37 +51,54 @@ export default function MyProfilePage() {
     loadUserProfile();
   }, []);
 
+  const getDynamicSkillName = (skill: UserSkill): string => {
+    if (skill.skillId.startsWith("temp-")) {
+      return tempSkillNames[skill.skillId] || "New Skill";
+    }
+    return getSkillName(skill.skillId);
+  };
+
+  // --- UPDATED: Handler function to use the new level state ---
   const handleAddOfferedSkill = (e: FormEvent) => {
     e.preventDefault();
-    if (newOfferedSkill.trim() && user) {
-      const tempId = `temp-offered-${Date.now()}`;
-      setTempSkillNames((prev) => ({
-        ...prev,
-        [tempId]: newOfferedSkill.trim(),
-      }));
-      setUser({ ...user, skillsOffered: [...user.skillsOffered, tempId] });
-      setNewOfferedSkill("");
-    }
+    if (!newOfferedSkill.trim() || !user) return;
+
+    const tempId = `temp-offered-${Date.now()}`;
+    setTempSkillNames((prev) => ({
+      ...prev,
+      [tempId]: newOfferedSkill.trim(),
+    }));
+
+    const newUserSkill: UserSkill = {
+      skillId: tempId,
+      level: newOfferedSkillLevel,
+    }; // Use state for level
+
+    setUser({
+      ...user,
+      skillsOffered: [...(user.skillsOffered || []), newUserSkill],
+    });
+    setNewOfferedSkill("");
   };
 
+  // --- UPDATED: Handler function to use the new level state ---
   const handleAddSoughtSkill = (e: FormEvent) => {
     e.preventDefault();
-    if (newSoughtSkill.trim() && user) {
-      const tempId = `temp-sought-${Date.now()}`;
-      setTempSkillNames((prev) => ({
-        ...prev,
-        [tempId]: newSoughtSkill.trim(),
-      }));
-      setUser({ ...user, skillsSought: [...user.skillsSought, tempId] });
-      setNewSoughtSkill("");
-    }
-  };
+    if (!newSoughtSkill.trim() || !user) return;
 
-  const getDynamicSkillName = (skillId: string): string => {
-    if (skillId.startsWith("temp-")) {
-      return tempSkillNames[skillId] || "New Skill";
-    }
-    return getSkillName(skillId);
+    const tempId = `temp-sought-${Date.now()}`;
+    setTempSkillNames((prev) => ({ ...prev, [tempId]: newSoughtSkill.trim() }));
+
+    const newUserSkill: UserSkill = {
+      skillId: tempId,
+      level: newSoughtSkillLevel,
+    }; // Use state for level
+
+    setUser({
+      ...user,
+      skillsSought: [...(user.skillsSought || []), newUserSkill],
+    });
+    setNewSoughtSkill("");
   };
 
   if (isLoading)
@@ -80,6 +110,7 @@ export default function MyProfilePage() {
       {/* Main Profile Content */}
       <div className="lg:col-span-2 space-y-6">
         <Card className="p-8">
+          {/* ... (Header and Bio sections unchanged) ... */}
           <div className="flex flex-col sm:flex-row items-start gap-6">
             <Image
               src={user.profilePicture}
@@ -90,9 +121,7 @@ export default function MyProfilePage() {
             />
             <div className="flex-1">
               <div className="flex items-center gap-2">
-                <h1 className="text-3xl font-bold text-card-foreground">
-                  {user.name}
-                </h1>
+                <h1 className="text-3xl font-bold">{user.name}</h1>
                 {user.verified && (
                   <ShieldCheck className="h-6 w-6 text-primary" />
                 )}
@@ -109,9 +138,7 @@ export default function MyProfilePage() {
             </Button>
           </div>
           <div className="mt-8">
-            <h2 className="text-xl font-semibold text-card-foreground border-b pb-2">
-              Your Bio
-            </h2>
+            <h2 className="text-xl font-semibold border-b pb-2">Your Bio</h2>
             <p className="mt-4 text-zinc-600 leading-relaxed">{user.bio}</p>
           </div>
         </Card>
@@ -120,47 +147,73 @@ export default function MyProfilePage() {
             <CardTitle>Manage Your Skills</CardTitle>
           </CardHeader>
           <CardContent className="grid grid-cols-1 md:grid-cols-2 gap-8">
+            {/* --- UPDATED Skills I Offer Section --- */}
             <div className="space-y-4">
-              <h3 className="font-semibold text-card-foreground">
-                Skills You Offer
-              </h3>
-              <div className="mt-4 flex flex-wrap gap-2 min-h-[40px]">
-                {user.skillsOffered.map((skillId) => (
-                  <SkillBadge key={skillId}>
-                    {getDynamicSkillName(skillId)}
+              <h3 className="font-semibold">Skills You Offer</h3>
+              <div className="flex flex-wrap gap-2 min-h-[40px]">
+                {user.skillsOffered?.map((skill) => (
+                  <SkillBadge key={skill.skillId} level={skill.level}>
+                    {getDynamicSkillName(skill)}
                   </SkillBadge>
                 ))}
               </div>
               <form onSubmit={handleAddOfferedSkill} className="flex gap-2">
                 <Input
                   type="text"
-                  placeholder="Add a new skill..."
+                  placeholder="Add a skill..."
                   value={newOfferedSkill}
                   onChange={(e) => setNewOfferedSkill(e.target.value)}
                 />
+                <Select
+                  value={newOfferedSkillLevel}
+                  onValueChange={(v) =>
+                    setNewOfferedSkillLevel(v as SkillLevel)
+                  }
+                >
+                  <SelectTrigger className="w-[180px]">
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="Beginner">Beginner</SelectItem>
+                    <SelectItem value="Intermediate">Intermediate</SelectItem>
+                    <SelectItem value="Expert">Expert</SelectItem>
+                  </SelectContent>
+                </Select>
                 <Button type="submit" size="icon" variant="secondary">
                   <PlusCircle className="h-5 w-5" />
                 </Button>
               </form>
             </div>
+            {/* --- UPDATED Skills I Seek Section --- */}
             <div className="space-y-4">
-              <h3 className="font-semibold text-card-foreground">
-                Skills You Seek
-              </h3>
-              <div className="mt-4 flex flex-wrap gap-2 min-h-[40px]">
-                {user.skillsSought.map((skillId) => (
-                  <SkillBadge key={skillId}>
-                    {getDynamicSkillName(skillId)}
+              <h3 className="font-semibold">Skills You Seek</h3>
+              <div className="flex flex-wrap gap-2 min-h-[40px]">
+                {user.skillsSought?.map((skill) => (
+                  <SkillBadge key={skill.skillId} level={skill.level}>
+                    {getDynamicSkillName(skill)}
                   </SkillBadge>
                 ))}
               </div>
               <form onSubmit={handleAddSoughtSkill} className="flex gap-2">
                 <Input
                   type="text"
-                  placeholder="Add a skill you want..."
+                  placeholder="Add a skill..."
                   value={newSoughtSkill}
                   onChange={(e) => setNewSoughtSkill(e.target.value)}
                 />
+                <Select
+                  value={newSoughtSkillLevel}
+                  onValueChange={(v) => setNewSoughtSkillLevel(v as SkillLevel)}
+                >
+                  <SelectTrigger className="w-[180px]">
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="Beginner">Beginner</SelectItem>
+                    <SelectItem value="Intermediate">Intermediate</SelectItem>
+                    <SelectItem value="Expert">Expert</SelectItem>
+                  </SelectContent>
+                </Select>
                 <Button type="submit" size="icon" variant="secondary">
                   <PlusCircle className="h-5 w-5" />
                 </Button>
@@ -170,8 +223,8 @@ export default function MyProfilePage() {
         </Card>
       </div>
 
-      {/* Sidebar with Details */}
-      <div className="lg:col-span-1 space-y-6">
+      {/* Sidebar with Details (unchanged) */}
+      <aside className="lg:col-span-1 space-y-6">
         <Card>
           <CardHeader>
             <CardTitle>Your Details</CardTitle>
@@ -191,7 +244,7 @@ export default function MyProfilePage() {
             </div>
           </CardContent>
         </Card>
-      </div>
+      </aside>
     </div>
   );
 }

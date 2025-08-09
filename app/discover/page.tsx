@@ -3,11 +3,11 @@ import { fetchUsers, LOGGED_IN_USER_ID } from "@/lib/action";
 import { UserCard } from "@/components/ui/UserCard";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
-import { Search } from "lucide-react";
+import { Search, Info } from "lucide-react";
+import SkillBadge from "@/components/ui/SkillBadge";
 
 export default async function DiscoverPage() {
   const allUsers = await fetchUsers();
-  // Filter out the currently logged-in user
   const usersToDiscover = allUsers.filter(
     (user) => user.id !== LOGGED_IN_USER_ID
   );
@@ -27,6 +27,23 @@ export default async function DiscoverPage() {
           <Button>
             <Search className="h-4 w-4 mr-2" /> Search
           </Button>
+        </div>
+      </div>
+
+      {/* --- NEW: Flair Legend --- */}
+      <div className="flex items-center justify-center gap-6 text-sm text-zinc-500 p-4 bg-card border rounded-lg">
+        <div className="flex items-center gap-2 font-semibold">
+          <Info className="h-4 w-4" />
+          LEGEND:
+        </div>
+        <div className="flex items-center gap-2">
+          <SkillBadge level="Beginner">Beginner</SkillBadge>
+        </div>
+        <div className="flex items-center gap-2">
+          <SkillBadge level="Intermediate">Intermediate</SkillBadge>
+        </div>
+        <div className="flex items-center gap-2">
+          <SkillBadge level="Expert">Expert</SkillBadge>
         </div>
       </div>
 

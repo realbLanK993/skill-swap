@@ -1,5 +1,12 @@
 // /lib/definitions.ts
 
+export type SkillLevel = "Beginner" | "Intermediate" | "Expert";
+
+export type UserSkill = {
+  skillId: string;
+  level: SkillLevel;
+};
+
 export type Skill = {
   id: string;
   name: string;
@@ -12,11 +19,11 @@ export type User = {
   headline: string;
   bio: string;
   profilePicture: string;
-  skillsOffered: string[];
-  skillsSought: string[];
+  // --- UPDATED to use the new UserSkill type ---
+  skillsOffered: UserSkill[];
+  skillsSought: UserSkill[];
   rating: number;
   reviews: number;
-  // --- NEW FIELDS ---
   verified: boolean;
   age: number;
   gender: "Male" | "Female" | "Other" | "Prefer not to say";

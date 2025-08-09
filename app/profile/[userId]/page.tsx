@@ -1,4 +1,5 @@
-"use client"; // <-- IMPORTANT: Converted to a Client Component
+// /app/profile/[userId]/page.tsx
+"use client";
 
 import { useState, useEffect } from "react";
 import { notFound, useParams } from "next/navigation";
@@ -43,7 +44,6 @@ export default function ProfilePage() {
         const fetchedUser = await fetchUserById(userId as string);
         if (fetchedUser) {
           setUser(fetchedUser);
-          // Check if the logged-in user can rate this profile
           const hasCompleted = await hasCompletedSwapWithUser(
             LOGGED_IN_USER_ID,
             fetchedUser.id
@@ -61,11 +61,8 @@ export default function ProfilePage() {
   }, [userId]);
 
   const handleRatingSubmit = (rating: number) => {
-    // In a real app, you would send this rating to your backend.
-    // For this prototype, we'll just log it.
     console.log(`Submitted rating of ${rating} for user ${user?.name}`);
-    // Optionally, you could disable the rating form after submission.
-    setCanRate(false); // To prevent re-rating in this session
+    setCanRate(false);
   };
 
   if (isLoading) {
@@ -83,7 +80,6 @@ export default function ProfilePage() {
       {/* Main Profile Content */}
       <div className="lg:col-span-2">
         <Card className="p-8">
-          {/* ... (Profile Header and Bio sections remain the same) ... */}
           <div className="flex flex-col sm:flex-row items-start gap-6">
             <Image
               src={user.profilePicture}
@@ -133,8 +129,10 @@ export default function ProfilePage() {
                 Skills I Offer
               </h2>
               <div className="mt-4 flex flex-wrap gap-2">
-                {user.skillsOffered.map((skillId) => (
-                  <SkillBadge key={skillId}>{getSkillName(skillId)}</SkillBadge>
+                {user.skillsOffered.map((skill) => (
+                  <SkillBadge key={skill.skillId} level={skill.level}>
+                    {getSkillName(skill.skillId)}
+                  </SkillBadge>
                 ))}
               </div>
             </div>
@@ -143,8 +141,10 @@ export default function ProfilePage() {
                 Skills I'm Looking For
               </h2>
               <div className="mt-4 flex flex-wrap gap-2">
-                {user.skillsSought.map((skillId) => (
-                  <SkillBadge key={skillId}>{getSkillName(skillId)}</SkillBadge>
+                {user.skillsSought.map((skill) => (
+                  <SkillBadge key={skill.skillId} level={skill.level}>
+                    {getSkillName(skill.skillId)}
+                  </SkillBadge>
                 ))}
               </div>
             </div>
@@ -174,7 +174,6 @@ export default function ProfilePage() {
           </CardContent>
         </Card>
 
-        {/* --- CONDITIONAL RATING CARD --- */}
         {!isOwnProfile && (
           <Card>
             <CardHeader>
@@ -192,7 +191,7 @@ export default function ProfilePage() {
             </CardContent>
           </Card>
         )}
-        {/* Reputation card from before, could be updated with new rating eventually */}
+
         <Card>
           <CardHeader>
             <CardTitle>Reputation</CardTitle>
