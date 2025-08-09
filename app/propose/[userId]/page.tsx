@@ -5,6 +5,7 @@ import {
   LOGGED_IN_USER_ID,
   getSkillName,
 } from "@/lib/action";
+import { Button } from "@/components/ui/button";
 import {
   Card,
   CardContent,
@@ -12,10 +13,10 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
+import { Label } from "@/components/ui/label";
 import { ArrowRightLeft } from "lucide-react";
 import { notFound } from "next/navigation";
-import { Label } from "@/components/ui/label";
-import { Button } from "@/components/ui/button";
+import { UserSkill } from "@/lib/definitions"; // IMPORT
 
 export default async function ProposeSwapPage({
   params,
@@ -50,11 +51,18 @@ export default async function ProposeSwapPage({
                   id="your-skill"
                   className="h-10 w-full rounded-md border border-gray-300 px-3"
                 >
-                  {currentUser.skillsOffered.map((id) => (
-                    <option key={id} value={id}>
-                      {getSkillName(id)}
-                    </option>
-                  ))}
+                  {currentUser.skillsOffered.map(
+                    (
+                      skill // Corrected: Iterate through the UserSkill objects
+                    ) => (
+                      <option key={skill.skillId} value={skill.skillId}>
+                        {" "}
+                        {/* Corrected: Access skill.skillId */}
+                        {getSkillName(skill.skillId)}{" "}
+                        {/* Now skill is the object, not ID */}
+                      </option>
+                    )
+                  )}
                 </select>
               </div>
 
@@ -69,15 +77,21 @@ export default async function ProposeSwapPage({
                   id="their-skill"
                   className="h-10 w-full rounded-md border border-gray-300 px-3"
                 >
-                  {otherUser.skillsOffered.map((id) => (
-                    <option key={id} value={id}>
-                      {getSkillName(id)}
-                    </option>
-                  ))}
+                  {otherUser.skillsOffered.map(
+                    (
+                      skill // Corrected: Iterate through UserSkill objects
+                    ) => (
+                      <option key={skill.skillId} value={skill.skillId}>
+                        {" "}
+                        {/* Corrected: Access skill.skillId */}
+                        {getSkillName(skill.skillId)}{" "}
+                        {/* Now skill is the object, not ID */}
+                      </option>
+                    )
+                  )}
                 </select>
               </div>
             </div>
-
             <div className="grid gap-2">
               <Label htmlFor="message">Message (optional)</Label>
               <textarea
@@ -86,7 +100,6 @@ export default async function ProposeSwapPage({
                 className="w-full rounded-md border border-gray-300 p-2 min-h-[100px]"
               ></textarea>
             </div>
-
             <Button type="submit" className="w-full md:w-auto">
               Send Proposal
             </Button>
