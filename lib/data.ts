@@ -89,8 +89,8 @@ export const users: User[] = [
     rating: 4.7,
     reviews: 15,
     verified: true,
-    age: 41,
-    gender: "Male",
+    age: 21,
+    gender: "Female",
     location: "San Francisco, CA",
   },
 ];
