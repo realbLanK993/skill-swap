@@ -1,6 +1,13 @@
 // /lib/actions.ts
-import { users, skills, swaps, messages } from "./data";
-import { User, Skill, Swap, Message, Conversation } from "./definitions";
+import { users, skills, swaps, messages, templates } from "./data";
+import {
+  User,
+  Skill,
+  Swap,
+  Message,
+  Conversation,
+  SkillTemplate,
+} from "./definitions";
 
 // Hardcode a user ID to simulate a logged-in session
 export const LOGGED_IN_USER_ID = "1";
@@ -90,4 +97,32 @@ export async function fetchMessagesForSwap(swapId: string): Promise<Message[]> {
       (a, b) =>
         new Date(a.timestamp).getTime() - new Date(b.timestamp).getTime()
     );
+}
+
+export async function fetchTemplates(): Promise<SkillTemplate[]> {
+  await simulateDelay(300); // Simulate network latency
+  return templates;
+}
+
+export async function fetchTemplateById(
+  templateId: string
+): Promise<SkillTemplate | undefined> {
+  await simulateDelay(300);
+  return templates.find((template) => template.id === templateId);
+}
+
+export async function hasCompletedSwapWithUser(
+  userId1: string,
+  userId2: string
+): Promise<boolean> {
+  await simulateDelay(100); // Simulate a quick check
+
+  const completedSwapExists = swaps.some(
+    (swap) =>
+      swap.status === "completed" &&
+      ((swap.proposerId === userId1 && swap.receiverId === userId2) ||
+        (swap.proposerId === userId2 && swap.receiverId === userId1))
+  );
+
+  return completedSwapExists;
 }

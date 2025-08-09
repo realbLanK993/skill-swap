@@ -1,9 +1,9 @@
 // /app/dashboard/settings/page.tsx
-"use client"; // <-- IMPORTANT: Convert the page to a Client Component
+"use client";
 
-import { useState, useEffect, FormEvent } from "react";
+import { useState, useEffect } from "react";
 import { notFound } from "next/navigation";
-import { fetchUserById, getSkillName, LOGGED_IN_USER_ID } from "@/lib/action";
+import { fetchUserById, LOGGED_IN_USER_ID } from "@/lib/action";
 import { User } from "@/lib/definitions";
 import { Button } from "@/components/ui/button";
 import {
@@ -17,219 +17,118 @@ import {
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
-import { PlusCircle, Trash2 } from "lucide-react";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select"; // Assuming you have a Select component
 
 export default function SettingsPage() {
-  const [user, setUser] = useState<User | null>(null);
+  const [user, setUser] = useState<Partial<User>>({});
   const [isLoading, setIsLoading] = useState(true);
 
-  // State for the input fields
-  const [newOfferedSkill, setNewOfferedSkill] = useState("");
-  const [newSoughtSkill, setNewSoughtSkill] = useState("");
-
-  // State to hold the names of temporarily added skills
-  const [tempSkillNames, setTempSkillNames] = useState<Record<string, string>>(
-    {}
-  );
-
-  // Fetch initial user data on component mount
   useEffect(() => {
     async function loadUserSettings() {
       const fetchedUser = await fetchUserById(LOGGED_IN_USER_ID);
-      if (fetchedUser) {
-        setUser(fetchedUser);
-      }
+      if (fetchedUser) setUser(fetchedUser);
       setIsLoading(false);
     }
     loadUserSettings();
   }, []);
 
-  const getDynamicSkillName = (skillId: string): string => {
-    return tempSkillNames[skillId] || getSkillName(skillId);
-  };
-
-  const handleAddSkill = (skillType: "offered" | "sought") => {
-    if (!user) return;
-
-    const skillName =
-      skillType === "offered" ? newOfferedSkill.trim() : newSoughtSkill.trim();
-    if (!skillName) return;
-
-    const tempId = `temp-${Date.now()}`;
-
-    // Update the temporary names map
-    setTempSkillNames((prev) => ({ ...prev, [tempId]: skillName }));
-
-    // Update the user state immutably
-    if (skillType === "offered") {
-      setUser({ ...user, skillsOffered: [...user.skillsOffered, tempId] });
-      setNewOfferedSkill(""); // Clear input
-    } else {
-      setUser({ ...user, skillsSought: [...user.skillsSought, tempId] });
-      setNewSoughtSkill(""); // Clear input
-    }
-  };
-
-  const handleRemoveSkill = (
-    skillIdToRemove: string,
-    skillType: "offered" | "sought"
+  const handleInputChange = (
+    e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>
   ) => {
-    if (!user) return;
-
-    // Remove from the temporary names map if it exists there
-    if (skillIdToRemove.startsWith("temp-")) {
-      setTempSkillNames((prev) => {
-        const newNames = { ...prev };
-        delete newNames[skillIdToRemove];
-        return newNames;
-      });
-    }
-
-    // Update the user state by filtering out the skill
-    if (skillType === "offered") {
-      setUser({
-        ...user,
-        skillsOffered: user.skillsOffered.filter(
-          (id) => id !== skillIdToRemove
-        ),
-      });
-    } else {
-      setUser({
-        ...user,
-        skillsSought: user.skillsSought.filter((id) => id !== skillIdToRemove),
-      });
-    }
+    setUser({ ...user, [e.target.name]: e.target.value });
   };
 
-  if (isLoading) {
-    return <div className="text-center p-10">Loading settings...</div>;
-  }
+  const handleGenderChange = (value: string) => {
+    setUser({ ...user, gender: value as User["gender"] });
+  };
 
-  if (!user) {
-    return notFound();
-  }
+  if (isLoading)
+    return <div className="text-center p-10">Loading settings...</div>;
+  if (!user) return notFound();
 
   return (
     <div className="max-w-3xl mx-auto space-y-8">
       <div>
         <h1 className="text-3xl font-bold tracking-tight">Profile Settings</h1>
-        <p className="text-gray-600">
+        <p className="text-zinc-500">
           Update your profile information and manage your skills.
         </p>
       </div>
 
-      {/* Profile Information Card (remains for context) */}
       <Card>
         <CardHeader>
           <CardTitle>Personal Information</CardTitle>
-          <CardDescription>
-            This is how your name and bio will appear to others.
-          </CardDescription>
         </CardHeader>
         <CardContent className="space-y-4">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div className="space-y-2">
+              <Label htmlFor="location">Location</Label>
+              <Input
+                id="location"
+                name="location"
+                value={user.location || ""}
+                onChange={handleInputChange}
+                placeholder="e.g., San Francisco, CA"
+              />
+            </div>
+            <div className="space-y-2">
+              <Label htmlFor="age">Age</Label>
+              <Input
+                id="age"
+                name="age"
+                type="number"
+                value={user.age || ""}
+                onChange={handleInputChange}
+                placeholder="e.g., 29"
+              />
+            </div>
+          </div>
           <div className="space-y-2">
-            <Label htmlFor="name">Full Name</Label>
-            <Input id="name" defaultValue={user.name} />
+            <Label htmlFor="gender">Gender</Label>
+            <Select value={user.gender} onValueChange={handleGenderChange}>
+              <SelectTrigger id="gender">
+                <SelectValue placeholder="Select gender" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="Male">Male</SelectItem>
+                <SelectItem value="Female">Female</SelectItem>
+                <SelectItem value="Other">Other</SelectItem>
+                <SelectItem value="Prefer not to say">
+                  Prefer not to say
+                </SelectItem>
+              </SelectContent>
+            </Select>
           </div>
           <div className="space-y-2">
             <Label htmlFor="headline">Headline</Label>
-            <Input id="headline" defaultValue={user.headline} />
+            <Input
+              id="headline"
+              name="headline"
+              value={user.headline || ""}
+              onChange={handleInputChange}
+              placeholder="e.g., Senior Graphic Designer | Branding Expert"
+            />
           </div>
           <div className="space-y-2">
             <Label htmlFor="bio">Bio</Label>
-            <Textarea id="bio" defaultValue={user.bio} rows={5} />
+            <Textarea
+              id="bio"
+              name="bio"
+              value={user.bio || ""}
+              onChange={handleInputChange}
+              placeholder="Tell others a little bit about yourself..."
+              rows={5}
+            />
           </div>
         </CardContent>
         <CardFooter className="border-t px-6 py-4">
           <Button>Save Changes</Button>
-        </CardFooter>
-      </Card>
-
-      {/* Skills Management Card (Now Interactive) */}
-      <Card>
-        <CardHeader>
-          <CardTitle>Manage Skills</CardTitle>
-          <CardDescription>
-            Add or remove the skills you offer and the skills you are looking
-            for.
-          </CardDescription>
-        </CardHeader>
-        <CardContent className="grid md:grid-cols-2 gap-8">
-          {/* Skills Offered */}
-          <div className="space-y-4">
-            <h3 className="font-semibold">Skills You Offer</h3>
-            <div className="flex flex-wrap gap-2 min-h-[40px] p-2 border rounded-md">
-              {user.skillsOffered.map((id) => (
-                <div
-                  key={id}
-                  className="flex items-center gap-1 bg-teal-100 text-teal-800 text-xs font-medium pl-2.5 pr-1 py-1 rounded-full"
-                >
-                  <span>{getDynamicSkillName(id)}</span>
-                  <button
-                    onClick={() => handleRemoveSkill(id, "offered")}
-                    className="hover:bg-teal-200 rounded-full p-0.5"
-                  >
-                    <Trash2 className="h-3 w-3" />
-                  </button>
-                </div>
-              ))}
-            </div>
-            <form
-              onSubmit={(e) => {
-                e.preventDefault();
-                handleAddSkill("offered");
-              }}
-              className="flex gap-2"
-            >
-              <Input
-                placeholder="e.g., Python"
-                value={newOfferedSkill}
-                onChange={(e) => setNewOfferedSkill(e.target.value)}
-              />
-              <Button type="submit" variant="secondary" size="icon">
-                <PlusCircle className="h-5 w-5" />
-              </Button>
-            </form>
-          </div>
-          {/* Skills Sought */}
-          <div className="space-y-4">
-            <h3 className="font-semibold">Skills You Seek</h3>
-            <div className="flex flex-wrap gap-2 min-h-[40px] p-2 border rounded-md">
-              {user.skillsSought.map((id) => (
-                <div
-                  key={id}
-                  className="flex items-center gap-1 bg-gray-200 text-gray-800 text-xs font-medium pl-2.5 pr-1 py-1 rounded-full"
-                >
-                  <span>{getDynamicSkillName(id)}</span>
-                  <button
-                    onClick={() => handleRemoveSkill(id, "sought")}
-                    className="hover:bg-gray-300 rounded-full p-0.5"
-                  >
-                    <Trash2 className="h-3 w-3" />
-                  </button>
-                </div>
-              ))}
-            </div>
-            <form
-              onSubmit={(e) => {
-                e.preventDefault();
-                handleAddSkill("sought");
-              }}
-              className="flex gap-2"
-            >
-              <Input
-                placeholder="e.g., Logo Design"
-                value={newSoughtSkill}
-                onChange={(e) => setNewSoughtSkill(e.target.value)}
-              />
-              <Button type="submit" variant="secondary" size="icon">
-                <PlusCircle className="h-5 w-5" />
-              </Button>
-            </form>
-          </div>
-        </CardContent>
-        <CardFooter className="border-t px-6 py-4">
-          <Button>Save Skill Changes</Button>
         </CardFooter>
       </Card>
     </div>

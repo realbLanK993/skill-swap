@@ -1,5 +1,5 @@
 // /lib/data.ts
-import { User, Skill, Swap, Message } from "./definitions";
+import { User, Skill, Swap, Message, SkillTemplate } from "./definitions";
 
 // Dummy Skills
 export const skills: Skill[] = [
@@ -13,29 +13,37 @@ export const skills: Skill[] = [
   { id: "8", name: "Data Analysis", category: "Tech" },
 ];
 
-// Dummy Users
 export const users: User[] = [
   {
     id: "1",
     name: "Alice Johnson",
     headline: "Full-Stack Developer | React & Node.js Expert",
     bio: "I build beautiful, responsive web applications...",
-    profilePicture: "https://i.pravatar.cc/150?u=a042581f4e29026024d",
+    profilePicture: "https://i.pravatar.cc/150?u=a042581f4e29026704d",
+
     skillsOffered: ["1", "8"],
     skillsSought: ["2", "3"],
     rating: 4.9,
     reviews: 23,
+    verified: true,
+    age: 29,
+    gender: "Female",
+    location: "San Francisco, CA",
   },
   {
     id: "2",
     name: "Ben Carter",
     headline: "Brand Strategist & Graphic Designer",
     bio: "I specialize in creating memorable brand identities...",
-    profilePicture: "https://i.pravatar.cc/150?u=a042581f4e29026704d",
+    profilePicture: "https://i.pravatar.cc/150?u=a042581f4e29026024d",
     skillsOffered: ["2"],
     skillsSought: ["1", "4"],
     rating: 4.8,
     reviews: 18,
+    verified: false,
+    age: 34,
+    gender: "Male",
+    location: "San Francisco, CA",
   },
   {
     id: "3",
@@ -47,6 +55,10 @@ export const users: User[] = [
     skillsSought: ["1", "5"],
     rating: 5.0,
     reviews: 31,
+    verified: true,
+    age: 27,
+    gender: "Female",
+    location: "San Francisco, CA",
   },
   {
     id: "4",
@@ -58,10 +70,97 @@ export const users: User[] = [
     skillsSought: ["7", "8"],
     rating: 4.7,
     reviews: 15,
+    verified: true,
+    age: 41,
+    gender: "Male",
+    location: "San Franciscco, CA",
   },
 ];
 
-// Dummy Swaps
+// --- NEW Skill Templates data ---
+export const templates: SkillTemplate[] = [
+  {
+    id: "template-1",
+    title: "Learn Basic Guitar Chords",
+    category: "Music",
+    icon: "Music",
+    description:
+      "Master the 4 fundamental chords (G, C, D, Em) that unlock hundreds of popular songs.",
+    steps: [
+      {
+        step: 1,
+        title: "Anatomy of the Guitar",
+        description:
+          "Learn the names of the parts of your guitar, from the headstock to the body.",
+      },
+      {
+        step: 2,
+        title: "How to Read Chord Diagrams",
+        description:
+          "Understand how diagrams show you where to place your fingers on the fretboard.",
+      },
+      {
+        step: 3,
+        title: "Mastering the G Chord",
+        description:
+          "Practice finger placement for the G chord until you can form it cleanly.",
+      },
+      {
+        step: 4,
+        title: "Transitioning Between Chords",
+        description:
+          "The key to playing songs is smoothly moving from one chord to another. Practice G to C transitions.",
+      },
+      {
+        step: 5,
+        title: "Strumming Your First Song",
+        description:
+          "Using a simple down-down-up-up-down-up strumming pattern, play a simple progression.",
+      },
+    ],
+  },
+  {
+    id: "template-2",
+    title: "Introduction to Salsa Dancing",
+    category: "Dance",
+    icon: "PersonStanding",
+    description:
+      "Learn the fundamental forward-and-back basic step of salsa dancing.",
+    steps: [
+      {
+        step: 1,
+        title: "Understanding the Rhythm",
+        description:
+          "Listen to salsa music and learn to count the 8 beats. The basic step uses 6 of these 8 counts.",
+      },
+      {
+        step: 2,
+        title: "The Leader's Forward Basic",
+        description:
+          "On beat 1, step forward with your left foot. On beat 2, replace your right foot. On beat 3, step back with your left foot.",
+      },
+      {
+        step: 3,
+        title: "The Leader's Backward Basic",
+        description:
+          "On beat 5, step back with your right foot. On beat 6, replace your left foot. On beat 7, step forward with your right foot.",
+      },
+      {
+        step: 4,
+        title: "Follower's Steps",
+        description:
+          "The follower's steps mirror the leader's. On beat 1, step back with your right foot.",
+      },
+      {
+        step: 5,
+        title: "Putting It All Together",
+        description:
+          "Practice the full 8-count basic step with a partner or solo until it feels natural.",
+      },
+    ],
+  },
+];
+
 export const swaps: Swap[] = [
   {
     id: "swap1",

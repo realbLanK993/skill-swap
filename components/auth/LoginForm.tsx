@@ -1,8 +1,6 @@
 // /app/components/auth/LoginForm.tsx
 "use client";
 
-import { useRouter } from "next/navigation";
-import { Button } from "@/components/ui/button";
 import {
   Card,
   CardContent,
@@ -15,6 +13,8 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import Link from "next/link";
 import React from "react";
+import { useRouter } from "next/navigation";
+import { Button } from "../ui/button";
 
 export function LoginForm() {
   const router = useRouter();
@@ -22,9 +22,15 @@ export function LoginForm() {
   const handleLogin = (event: React.FormEvent) => {
     event.preventDefault();
     // In a real app, you would validate credentials here.
-    // For this prototype, we simulate a successful login and redirect.
-    console.log("Simulating successful login...");
-    router.push("/"); // Redirect to the main page
+
+    // 1. Set the logged-in flag in localStorage.
+    localStorage.setItem("isLoggedIn", "true");
+
+    // 2. Fire the global event to notify other components (like the Navbar).
+    window.dispatchEvent(new Event("storageChange"));
+
+    // 3. Redirect to the main dashboard.
+    router.push("/dashboard");
   };
 
   return (
@@ -66,3 +72,5 @@ export function LoginForm() {
     </Card>
   );
 }
+
+export default LoginForm;

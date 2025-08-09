@@ -1,37 +1,36 @@
 "use client";
 
 import { useEffect, useState, useRef } from "react";
-import { notFound } from "next/navigation";
+import { notFound, useParams } from "next/navigation";
 import {
   fetchMessagesForSwap,
   LOGGED_IN_USER_ID,
   getSwapDetails,
 } from "@/lib/action";
-import { Message, User, Swap } from "@/lib/definitions";
+import { Message, User } from "@/lib/definitions";
 import { ChatBubble } from "@/components/messages/ChatBubble";
 import { MessageInputForm } from "@/components/messages/MessageInputForm";
-import { ArrowLeft } from "lucide-react";
-import Link from "next/link";
 import Image from "next/image";
 import { swaps } from "@/lib/data";
 
-export default function CompMessage({ swapId }: { swapId: string }) {
+export default function ConversationPage({ swapId }: { swapId: string }) {
   const [messages, setMessages] = useState<Message[]>([]);
   const [otherUser, setOtherUser] = useState<User | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const messagesEndRef = useRef<HTMLDivElement | null>(null);
+
   useEffect(() => {
-    // Scroll to the bottom whenever messages change
     messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
   }, [messages]);
 
   useEffect(() => {
     async function loadConversation() {
+      if (!swapId) return;
+      setIsLoading(true);
       try {
         const initialMessages = await fetchMessagesForSwap(swapId);
         setMessages(initialMessages);
 
-        // Find the swap to identify the other user
         const currentSwap = swaps.find((s) => s.id === swapId);
         if (currentSwap) {
           const { proposer, receiver } = getSwapDetails(currentSwap);
@@ -48,26 +47,22 @@ export default function CompMessage({ swapId }: { swapId: string }) {
     loadConversation();
   }, [swapId]);
 
-  if (isLoading) {
-    return <div className="text-center p-10">Loading conversation...</div>;
-  }
-
-  if (!otherUser) {
-    // This can happen if the swapId is invalid
-    return notFound();
-  }
+  if (isLoading)
+    return (
+      <div className="flex items-center justify-center h-full bg-card border-l rounded-l-none">
+        <p>Loading conversation...</p>
+      </div>
+    );
+  if (!otherUser) return notFound();
 
   const handleNewMessage = (newMessage: Message) => {
     setMessages((prev) => [...prev, newMessage]);
   };
 
   return (
-    <div className="flex flex-col h-[calc(100vh-140px)] max-w-2xl mx-auto bg-white border rounded-lg shadow-sm">
+    <div className="flex flex-col h-full bg-card border-l rounded-l-none">
       {/* Header */}
       <div className="flex items-center gap-4 p-3 border-b">
-        <Link href="/messages" className="p-2 rounded-full hover:bg-gray-100">
-          <ArrowLeft className="h-5 w-5" />
-        </Link>
         <Image
           src={otherUser.profilePicture}
           alt={otherUser.name}
